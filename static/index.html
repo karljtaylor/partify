@@ -1,0 +1,25 @@
+<script>
+    partify = (event) => {
+        event.preventDefault();
+        const data = new FormData();
+        data.append('image', event.target[0].files[0]);
+        fetch('/partify', {
+            method: 'POST',
+            body: data
+        }).then((response) =>  {
+            response.blob().then((imageData) => {
+                const renderedImage = URL.createObjectURL(imageData);
+                const imageTag = document.createElement("IMG");
+                imageTag.src = renderedImage
+                document.getElementById('rendered-gif').appendChild(imageTag);
+            })
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+</script>
+<form onsubmit="partify(event)">
+    <input type="file" />
+    <input type="submit"/>
+</form>
+<div id="rendered-gif"></div>
