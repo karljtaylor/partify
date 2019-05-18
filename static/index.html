@@ -1,25 +1,38 @@
-<script>
-    partify = (event) => {
-        event.preventDefault();
-        const data = new FormData();
-        data.append('image', event.target[0].files[0]);
-        fetch('/partify', {
-            method: 'POST',
-            body: data
-        }).then((response) =>  {
-            response.blob().then((imageData) => {
-                const renderedImage = URL.createObjectURL(imageData);
-                const imageTag = document.createElement("IMG");
-                imageTag.src = renderedImage
-                document.getElementById('rendered-gif').appendChild(imageTag);
+<!doctype html>
+<html>
+<head>
+  <title>Partify</title>
+  <link rel="stylesheet" href="css/styles.css">
+    <script>
+        partify = (event) => {
+            event.preventDefault();
+            const data = new FormData();
+            data.append('image', event.target[0].files[0]);
+            fetch('/api/partify', {
+                method: 'POST',
+                body: data
+            }).then((response) =>  {
+                response.blob().then((imageData) => {
+                    const renderedImage = URL.createObjectURL(imageData);
+                    const imageTag = document.createElement("IMG");
+                    imageTag.src = renderedImage
+                    document.getElementById('rendered-gif').appendChild(imageTag);
+                })
+            }).catch((err) => {
+                console.log(err)
             })
-        }).catch((err) => {
-            console.log(err)
-        })
-    }
-</script>
-<form onsubmit="partify(event)">
-    <input type="file" />
-    <input type="submit"/>
-</form>
-<div id="rendered-gif"></div>
+        }
+    </script>
+</head>
+<body>
+    <h1>Partify</h1>
+    <p>
+        Every emoji should be a party
+    </p>
+    <form onsubmit="partify(event)">
+        <input type="file" />
+        <input type="submit" value="Partify"/>
+    </form>
+    <div id="rendered-gif"></div>
+</body>
+</html>

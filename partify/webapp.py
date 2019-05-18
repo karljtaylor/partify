@@ -24,7 +24,7 @@ def main():
     app = web.Application()
 
     app.router.add_route('GET', '/', index, name='index')
-    app.router.add_route('POST', '/partify', partify_image, name='partify')
+    app.router.add_route('POST', '/api/partify', partify_image, name='partify')
 
     port = int(os.environ.get("PORT", 3333))
     web.run_app(app, port=port)
