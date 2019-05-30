@@ -6,25 +6,39 @@ DEFAULT_CYCLE = 7
 
 
 def prepare_frames(source_image):
+    width, height = source_image.size
+    max_size = max(width, height)
+
     prepared_frames = []
+    frame_times = []
     for raw_frame in ImageSequence.Iterator(source_image):
-        frame = raw_frame.convert('RGBA')
-        resized = frame.resize((64, 64))
+        # Make sure the image is a square
+        if width == height:
+            frame = raw_frame.convert('RGBA')
+        else:
+            frame = Image.new('RGBA', (max_size, max_size), (255, 255, 255, 0))
+            frame.paste(raw_frame, (int((max_size - width) / 2), int((max_size - height) / 2)))
+
+        if max_size > 128:
+            frame = frame.resize((128, 128), Image.ANTIALIAS)
 
         # Use alpha channel to set a white background
-        _, _, _, alpha = resized.split()
+        _, _, _, alpha = frame.split()
         mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
-        resized.paste((255, 255, 255), mask=mask)
+        frame.paste((255, 255, 255), mask=mask)
 
-        grayscale = ImageOps.grayscale(resized)
+        grayscale = ImageOps.grayscale(frame)
 
         prepared_frames.append(grayscale)
+        frame_times.append(raw_frame.info.get('duration', 120))
 
     base_frames = prepared_frames.copy()
+    base_times = frame_times.copy()
     while len(prepared_frames) < DEFAULT_CYCLE:
         prepared_frames.extend(base_frames)
+        frame_times.extend(base_times)
 
-    return prepared_frames
+    return prepared_frames, frame_times
 
 
 def generate_spectrum(frame_count):
@@ -62,7 +76,7 @@ def colorize_frame(frame, spectrum):
 def partify(image_bytes):
     source_image = Image.open(BytesIO(image_bytes))
 
-    prepared_frames = prepare_frames(source_image)
+    prepared_frames, frame_times = prepare_frames(source_image)
     spectrum = generate_spectrum(len(prepared_frames))
 
     output = []
@@ -78,6 +92,7 @@ def partify(image_bytes):
                 append_images=output[1:],
                 loop=0,
                 dispose=2,
-                duration=120
+                duration=frame_times,
+                quality=90
             )
             return gif_bytes.getvalue()
