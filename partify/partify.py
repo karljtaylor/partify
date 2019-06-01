@@ -1,6 +1,7 @@
 from PIL import Image, ImageOps, ImageSequence
 from colorsys import hsv_to_rgb
 from io import BytesIO
+from analytics-python import analytics 
 
 DEFAULT_CYCLE = 7
 
